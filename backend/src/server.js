@@ -5,6 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const path = require("path");
 
 const connectDB = require("./config/db");
 
@@ -26,20 +27,44 @@ app.use(
   })
 );
 
-app.get("/", (req, res) => {
+// API health check
+app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
     message: "MERGEMAP API is running",
   });
 });
 
+// API routes
 app.use("/api/analyses", analysisRoutes);
 
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "API route not found.",
+// React production build location
+const frontendPath = path.resolve(__dirname, "../../frontend/dist");
+
+// Serve React frontend files
+app.use(express.static(frontendPath));
+
+// Serve React application for website routes
+app.use((req, res, next) => {
+  if (req.method !== "GET" || req.path.startsWith("/api/")) {
+    return next();
+  }
+
+  res.sendFile(path.join(frontendPath, "index.html"), (error) => {
+    if (error) next(error);
   });
+});
+
+// Handle unknown API routes
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/")) {
+    return res.status(404).json({
+      success: false,
+      message: "API route not found.",
+    });
+  }
+
+  next();
 });
 
 app.use(errorMiddleware);

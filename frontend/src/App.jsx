@@ -27,7 +27,7 @@ import {
   Clock,
 } from "lucide-react";
 
-const API = "http://localhost:5000/api";
+const API = "/api";
 const GITHUB_URL = "https://github.com/Chirashrikarmakar/MERGEMAP";
 const READ_STORAGE_KEY = "mergemap_seen_analysis_ids";
 
